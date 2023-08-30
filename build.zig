@@ -41,7 +41,7 @@ pub fn build(b: *Builder) !void {
     const optimize = b.standardOptimizeOption(.{});
 
     const args_dep = b.dependency("args", .{});
-    const args_mod = args_dep.module("args");
+    _ = args_dep;
 
     var examples = Simon.init(b, optimize);
     examples.install(b);
@@ -56,16 +56,6 @@ pub fn build(b: *Builder) !void {
 
     const test_step = b.step("test", "run unit tests");
     test_step.dependOn(&b.addRunArtifact(pio_tests).step);
-
-    const flash_tool = b.addExecutable(.{
-        .name = "rp2040-flash",
-        .optimize = .Debug,
-        .target = .{},
-        .root_source_file = .{ .path = "tools/rp2040-flash.zig" },
-    });
-    flash_tool.addModule("args", args_mod);
-
-    b.installArtifact(flash_tool);
 }
 
 fn root() []const u8 {
