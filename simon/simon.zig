@@ -101,7 +101,7 @@ fn select_level() u8 {
             level = 30;
         }
 
-        time.sleep_ms(50); // saves energy as we wait here a lot and debounces switch
+        time.sleep_ms(50); // debounces switch and saves a bit of energt
     }
 
     return level;
