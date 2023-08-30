@@ -200,6 +200,8 @@ fn set_game_speed(step: usize) u32 {
 }
 
 fn game_loop(sequence: *[max_sequence_size]u8) void {
+    reset_game(sequence);
+
     var level = select_level();
 
     time.sleep_ms(1000);
@@ -223,8 +225,7 @@ pub fn main() !void {
     // pins = comptime pin_config.apply();
     var sequence: [max_sequence_size]u8 = undefined;
     setup();
-    while (true) {
-        reset_game(&sequence);
+    while (true) {       
         game_loop(&sequence);
     }
 }
