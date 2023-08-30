@@ -29,8 +29,6 @@ fn setup() void {
         gpio.num(i).set_pull(.up);
     }
 
-    const pins = pin_config.apply();
-    piezo = pins.piezo;
     piezo.set_level(6000);
     piezo.slice().set_wrap(65000);
     piezo.slice().set_clk_div(4, 0);
@@ -223,7 +221,11 @@ fn game_loop(sequence: *[max_sequence_size]u8) void {
 }
 
 pub fn main() !void {
+    const pins = pin_config.apply();
+    piezo = pins.piezo;
+
     var sequence: [max_sequence_size]u8 = undefined;
+
     setup();
     while (true) {
         game_loop(&sequence);
