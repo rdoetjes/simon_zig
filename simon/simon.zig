@@ -13,6 +13,8 @@ const pin_config = rp2040.pins.GlobalConfiguration{
     .GPIO10 = .{ .name = "piezo", .function = .PWM5_A },
 };
 
+var piezo: rp2040.pwm.Pwm(5, .a) = undefined;
+
 fn setup() void {
     for (2..6) |r| {
         var i: u5 = @truncate(r);
@@ -28,10 +30,11 @@ fn setup() void {
     }
 
     const pins = pin_config.apply();
-    pins.piezo.set_level(6000);
-    pins.piezo.slice().set_wrap(65000);
-    pins.piezo.slice().set_clk_div(4, 0);
-    pins.piezo.slice().disable();
+    piezo = pins.piezo;
+    piezo.set_level(6000);
+    piezo.slice().set_wrap(65000);
+    piezo.slice().set_clk_div(4, 0);
+    piezo.slice().disable();
 }
 
 fn reset_game(sequence: *[max_sequence_size]u8) void {
@@ -45,25 +48,23 @@ fn reset_game(sequence: *[max_sequence_size]u8) void {
 }
 
 fn stop_beep() void {
-    const pins = pin_config.apply();
-    pins.piezo.slice().disable();
+    piezo.slice().disable();
 }
 
 fn play_beep(move: u8) void {
-    const pins = pin_config.apply();
-    pins.piezo.slice().set_clk_div(4, 0);
+    piezo.slice().set_clk_div(4, 0);
     switch (move) {
-        0 => pins.piezo.slice().set_wrap(45000),
-        1 => pins.piezo.slice().set_wrap(55000),
-        2 => pins.piezo.slice().set_wrap(60000),
-        3 => pins.piezo.slice().set_wrap(65500),
+        0 => piezo.slice().set_wrap(45000),
+        1 => piezo.slice().set_wrap(55000),
+        2 => piezo.slice().set_wrap(60000),
+        3 => piezo.slice().set_wrap(65500),
         4 => {
-            pins.piezo.slice().set_wrap(65500);
-            pins.piezo.slice().set_clk_div(10, 0);
+            piezo.slice().set_wrap(65500);
+            piezo.slice().set_clk_div(10, 0);
         },
-        else => pins.piezo.slice().set_wrap(0),
+        else => piezo.slice().set_wrap(0),
     }
-    pins.piezo.slice().enable();
+    piezo.slice().enable();
 }
 
 fn play_move(move: u8, speed: u32) void {
@@ -222,10 +223,9 @@ fn game_loop(sequence: *[max_sequence_size]u8) void {
 }
 
 pub fn main() !void {
-    // pins = comptime pin_config.apply();
     var sequence: [max_sequence_size]u8 = undefined;
     setup();
-    while (true) {       
+    while (true) {
         game_loop(&sequence);
     }
 }
