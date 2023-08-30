@@ -3,6 +3,7 @@ const microzig = @import("microzig");
 const rp2040 = microzig.hal;
 const time = rp2040.time;
 const gpio = rp2040.gpio;
+const pwm = rp2040.pwm;
 const rand = rp2040.rand;
 const max_sequence_size = 31;
 
@@ -19,6 +20,12 @@ fn setup() void {
         gpio.num(i).set_direction(.in);
         gpio.num(i).set_pull(.up);
     }
+
+    gpio.num(10).set_function(.pwm);
+    pwm.set_slice_wrap(4, 45000);
+    pwm.set_channel_level(4, pwm.Channel.a, 6000);
+    pwm.set_slice_clk_div(4, 4, 0);
+    pwm.set_slice_phase_correct(4, false);
 }
 
 fn reset_game(sequence: *[max_sequence_size]u8) void {
@@ -136,13 +143,30 @@ fn player(sequence: *[max_sequence_size]u8, step: usize) bool {
     return true;
 }
 
+fn set_game_speed(step: usize) u32 {
+    var result: u32 = 300;
+    if (step < 4) {
+        result = 300;
+    } else if (step >= 4 and step < 10) {
+        result = 250;
+    } else if (step >= 10 and step < 15) {
+        result = 225;
+    } else if (step >= 15 and step < 20) {
+        result = 200;
+    } else if (step >= 20) {
+        result = 175;
+    }
+    return result;
+}
+
 fn game_loop(sequence: *[max_sequence_size]u8) void {
     var level = select_level();
 
     time.sleep_ms(1000);
 
     for (0..level) |step| {
-        simon(sequence, step, 300);
+        var time_out = set_game_speed(step);
+        simon(sequence, step, time_out);
 
         if (!player(sequence, step)) {
             game_over();
@@ -159,7 +183,6 @@ fn game_loop(sequence: *[max_sequence_size]u8) void {
 pub fn main() !void {
     var sequence: [max_sequence_size]u8 = undefined;
     setup();
-
     while (true) {
         reset_game(&sequence);
         game_loop(&sequence);
