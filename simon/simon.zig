@@ -217,6 +217,7 @@ fn game_loop(sequence: *[max_sequence_size]u8) void {
             you_won();
             break;
         }
+        time.sleep_ms(500);
     }
 }
 
