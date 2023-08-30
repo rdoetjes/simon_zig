@@ -139,6 +139,8 @@ fn player(sequence: *[max_sequence_size]u8, step: usize) bool {
 fn game_loop(sequence: *[max_sequence_size]u8) void {
     var level = select_level();
 
+    reset_game(sequence);
+
     time.sleep_ms(1000);
 
     for (0..level) |step| {
@@ -160,8 +162,7 @@ pub fn main() !void {
     var sequence: [max_sequence_size]u8 = undefined;
     setup();
 
-    while (true) {
-        reset_game(&sequence);
+    while (true) {      
         game_loop(&sequence);
         time.sleep_ms(1000);
     }
