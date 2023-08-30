@@ -6,8 +6,6 @@ const gpio = rp2040.gpio;
 const pwm = rp2040.pwm;
 const pinsc = rp2040.pins;
 const rand = rp2040.rand;
-const clocks = rp2040.clocks;
-const regs = microzig.chip.registers;
 
 const max_sequence_size = 31;
 
