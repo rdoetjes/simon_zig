@@ -221,10 +221,9 @@ fn game_loop(sequence: *[max_sequence_size]u8) void {
 }
 
 pub fn main() !void {
+    var sequence: [max_sequence_size]u8 = undefined;
     const pins = pin_config.apply();
     piezo = pins.piezo;
-
-    var sequence: [max_sequence_size]u8 = undefined;
 
     setup();
     while (true) {
