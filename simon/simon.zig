@@ -4,8 +4,16 @@ const rp2040 = microzig.hal;
 const time = rp2040.time;
 const gpio = rp2040.gpio;
 const pwm = rp2040.pwm;
+const pinsc = rp2040.pins;
 const rand = rp2040.rand;
+const clocks = rp2040.clocks;
+const regs = microzig.chip.registers;
+
 const max_sequence_size = 31;
+
+const pin_config = rp2040.pins.GlobalConfiguration{
+    .GPIO10 = .{ .name = "piezo", .function = .PWM5_A },
+};
 
 fn setup() void {
     for (2..6) |r| {
@@ -21,11 +29,11 @@ fn setup() void {
         gpio.num(i).set_pull(.up);
     }
 
-    gpio.num(10).set_function(.pwm);
-    pwm.set_slice_wrap(4, 45000);
-    pwm.set_channel_level(4, pwm.Channel.a, 6000);
-    pwm.set_slice_clk_div(4, 4, 0);
-    pwm.set_slice_phase_correct(4, false);
+    const pins = pin_config.apply();
+    pins.piezo.set_level(6000);
+    pins.piezo.slice().set_wrap(65000);
+    pins.piezo.slice().set_clk_div(4, 0);
+    pins.piezo.slice().disable();
 }
 
 fn reset_game(sequence: *[max_sequence_size]u8) void {
@@ -38,10 +46,34 @@ fn reset_game(sequence: *[max_sequence_size]u8) void {
     }
 }
 
+fn stop_beep() void {
+    const pins = pin_config.apply();
+    pins.piezo.slice().disable();
+}
+
+fn play_beep(move: u8) void {
+    const pins = pin_config.apply();
+    pins.piezo.slice().set_clk_div(4, 0);
+    switch (move) {
+        0 => pins.piezo.slice().set_wrap(45000),
+        1 => pins.piezo.slice().set_wrap(55000),
+        2 => pins.piezo.slice().set_wrap(60000),
+        3 => pins.piezo.slice().set_wrap(65500),
+        4 => {
+            pins.piezo.slice().set_wrap(65500);
+            pins.piezo.slice().set_clk_div(10, 0);
+        },
+        else => pins.piezo.slice().set_wrap(0),
+    }
+    pins.piezo.slice().enable();
+}
+
 fn play_move(move: u8, speed: u32) void {
     var pin: u5 = @truncate(move + 2);
+    play_beep(move);
     gpio.num(pin).toggle();
     time.sleep_ms(speed);
+    stop_beep();
     gpio.num(pin).toggle();
     time.sleep_ms(speed);
 }
@@ -79,6 +111,7 @@ fn select_level() u8 {
 }
 
 fn game_over() void {
+    play_beep(4);
     for (0..10) |_| {
         for (2..6) |i| {
             var pin: u5 = @truncate(i);
@@ -86,25 +119,34 @@ fn game_over() void {
         }
         time.sleep_ms(100);
     }
+    stop_beep();
 }
 
 fn you_won() void {
+    time.sleep_ms(300);
     for (0..10) |_| {
         gpio.num(2).toggle();
+        play_beep(0);
         gpio.num(4).toggle();
+        play_beep(1);
         time.sleep_ms(100);
+        play_beep(2);
         gpio.num(3).toggle();
+        play_beep(3);
         gpio.num(5).toggle();
         time.sleep_ms(100);
     }
+    stop_beep();
 }
 
 fn key_down(pin: u5) void {
+    play_beep(pin - 6);
     gpio.num(pin - 4).toggle();
     while (gpio.num(pin).read() == 0) {
         time.sleep_ms(50);
     }
     gpio.num(pin - 4).toggle();
+    stop_beep();
 }
 
 fn player(sequence: *[max_sequence_size]u8, step: usize) bool {
@@ -175,17 +217,15 @@ fn game_loop(sequence: *[max_sequence_size]u8) void {
             you_won();
             break;
         }
-
-        time.sleep_ms(800);
     }
 }
 
 pub fn main() !void {
+    // pins = comptime pin_config.apply();
     var sequence: [max_sequence_size]u8 = undefined;
     setup();
     while (true) {
         reset_game(&sequence);
         game_loop(&sequence);
-        time.sleep_ms(1000);
     }
 }
