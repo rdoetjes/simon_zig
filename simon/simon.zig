@@ -155,19 +155,13 @@ fn player(sequence: *[max_sequence_size]u8, step: usize) bool {
             if (gpio.num(6).read() == 0) {
                 key_down(6);
                 move = 0;
-            }
-
-            if (gpio.num(7).read() == 0) {
+            } else if (gpio.num(7).read() == 0) {
                 key_down(7);
                 move = 1;
-            }
-
-            if (gpio.num(8).read() == 0) {
+            } else if (gpio.num(8).read() == 0) {
                 key_down(8);
                 move = 2;
-            }
-
-            if (gpio.num(9).read() == 0) {
+            } else if (gpio.num(9).read() == 0) {
                 key_down(9);
                 move = 3;
             }
