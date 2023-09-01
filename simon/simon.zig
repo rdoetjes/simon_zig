@@ -1,4 +1,3 @@
-const std = @import("std");
 const microzig = @import("microzig");
 const rp2040 = microzig.hal;
 const time = rp2040.time;
