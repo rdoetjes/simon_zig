@@ -14,7 +14,7 @@ const pin_config = rp2040.pins.GlobalConfiguration{
 
 var piezo: rp2040.pwm.Pwm(5, .a) = undefined;
 
-// setup the pins
+// setup the GPIO pins
 // 2,3,4,5 are LEDs red,green,yellow,blue
 // 6,7,8,9 are switches that correspond with LEDs, red,green,yellow,blue
 // 10 is the piezo
