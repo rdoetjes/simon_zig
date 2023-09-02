@@ -153,9 +153,9 @@ fn key_down(pin: u5, timeout_ms: u32) bool {
         count += 1;
         time.sleep_ms(50);
     }
-
-    gpio.num(pin - 4).toggle();
     stop_beep();
+    gpio.num(pin - 4).toggle();
+
     if (count >= max_loop) return false else return true;
 }
 
@@ -167,9 +167,7 @@ fn player(sequence: *[max_sequence_size]u8, step: usize, timeout_ms: u32) bool {
     for (0..step + 1) |i| {
         const loop_delay_ms = 50;
         const max_loop = timeout_ms / loop_delay_ms;
-
         var count: u8 = 0; // count time debounce ms is the time out
-
         var move: i8 = -1; // changes either the move (which can be rigt or wrong) or -2 when timeout is reach
 
         while (count < max_loop and move == -1) {
@@ -195,19 +193,18 @@ fn player(sequence: *[max_sequence_size]u8, step: usize, timeout_ms: u32) bool {
 // sets the game spede based on the step
 // SIMON grows impatient the further we get in the game and shows the moves shorter
 fn set_game_speed(step: usize) u32 {
-    var result: u32 = 300;
     if (step < 4) {
-        result = 300;
+        return 300;
     } else if (step >= 4 and step < 10) {
-        result = 250;
+        return 250;
     } else if (step >= 10 and step < 15) {
-        result = 225;
+        return 225;
     } else if (step >= 15 and step < 20) {
-        result = 200;
+        return 200;
     } else if (step >= 20) {
-        result = 175;
+        return 175;
     }
-    return result;
+    return 300;
 }
 
 // the game loop that handles GAME_RESET, SIMON, PLAYER, WIN AND LOOSE LOGIC.

@@ -91,8 +91,8 @@ fn key_down(pin: u5, timeout_ms: u32) bool {
         count += 1;
         time.sleep_ms(50);
     }
-
     gpio.num(pin - 4).toggle();
+
     if (count >= max_loop) return false else return true;
 }
 
@@ -100,9 +100,7 @@ fn player(sequence: *[max_sequence_size]u8, step: usize, timeout_ms: u32) bool {
     for (0..step + 1) |i| {
         const loop_delay_ms = 50;
         const max_loop = timeout_ms / loop_delay_ms;
-
         var count: u8 = 0; // count time debounce ms is the time out
-
         var move: i8 = -1; // changes either the move (which can be rigt or wrong) or -2 when timeout is reach
 
         while (count < max_loop and move == -1) {
