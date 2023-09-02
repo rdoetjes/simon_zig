@@ -141,44 +141,46 @@ fn you_won() void {
 }
 
 // lights up the led and plays the sound of the corresponding pin when the key is down
-// this allows you to cheat ;) you can think when you hold down the key.
-// the first revision SIMON had this bug too.
-fn key_down(pin: u5) void {
+// the button is released in software are timeout_ms, return true
+fn key_down(pin: u5, timeout_ms: u32) bool {
+    const loop_delay_ms = 50;
+    const max_loop = timeout_ms / loop_delay_ms;
+    var count: u32 = 0;
+
     play_beep(pin - 6);
     gpio.num(pin - 4).toggle();
-    while (gpio.num(pin).read() == 0) {
+    while (count < max_loop and gpio.num(pin).read() == 0) {
+        count += 1;
         time.sleep_ms(50);
     }
+
     gpio.num(pin - 4).toggle();
     stop_beep();
+    if (count >= max_loop) return false else return true;
 }
 
 // player's turn they have to play all the steps SIMON has just shown them.
 // if you wait more than timeout_ms for the next button press return false.
-// if you enter the wrong move return false.
+// if you enter the wrong move or spend more than timeout_ms return false.
 // if you get the move correct within timeout_ms return true
 fn player(sequence: *[max_sequence_size]u8, step: usize, timeout_ms: u32) bool {
     for (0..step + 1) |i| {
         const loop_delay_ms = 50;
-        const max_loop = timeout_ms / 50;
+        const max_loop = timeout_ms / loop_delay_ms;
 
         var count: u8 = 0; // count time debounce ms is the time out
 
-        var move: i8 = -1; // no move yet
+        var move: i8 = -1; // changes either the move (which can be rigt or wrong) or -2 when timeout is reach
 
         while (count < max_loop and move == -1) {
             if (gpio.num(6).read() == 0) {
-                key_down(6);
-                move = 0;
+                if (key_down(6, timeout_ms)) move = 0 else move = -2;
             } else if (gpio.num(7).read() == 0) {
-                key_down(7);
-                move = 1;
+                if (key_down(7, timeout_ms)) move = 1 else move = -2;
             } else if (gpio.num(8).read() == 0) {
-                key_down(8);
-                move = 2;
+                if (key_down(8, timeout_ms)) move = 2 else move = -2;
             } else if (gpio.num(9).read() == 0) {
-                key_down(9);
-                move = 3;
+                if (key_down(9, timeout_ms)) move = 3 else move = -2;
             }
 
             count += 1;
