@@ -126,7 +126,7 @@ fn player(sequence: *[max_sequence_size]u8, step: usize, timeout_ms: u32) bool {
 }
 
 fn game_loop(sequence: *[max_sequence_size]u8) void {
-    var level = select_level();
+    var level = select_level(); // step 1 in video
 
     reset_game(sequence);
 
@@ -135,11 +135,11 @@ fn game_loop(sequence: *[max_sequence_size]u8) void {
     for (0..level) |step| {
         simon(sequence, step, 300);
 
-        if (!player(sequence, step, 1500)) {
-            game_over();
+        if (!player(sequence, step, 1500)) { // step 2 (key_down also)
+            game_over(); // step 3
             break;
         } else if (step == level - 1) {
-            you_won();
+            you_won(); //step 4
             break;
         }
 
