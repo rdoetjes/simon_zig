@@ -154,12 +154,11 @@ fn key_down(pin: u5) void {
 }
 
 // player's turn they have to play all the steps SIMON has just shown them.
-// if you wait more than 1500ms for the next button press return false.
+// if you wait more than timeout_ms for the next button press return false.
 // if you enter the wrong move return false.
-// if you get the move correct within 1500ms return true
-fn player(sequence: *[max_sequence_size]u8, step: usize) bool {
+// if you get the move correct within timeout_ms return true
+fn player(sequence: *[max_sequence_size]u8, step: usize, timeout_ms: u32) bool {
     for (0..step + 1) |i| {
-        const timeout_ms = 1500;
         const loop_delay_ms = 50;
         const max_loop = timeout_ms / 50;
 
@@ -221,7 +220,7 @@ fn game_loop(sequence: *[max_sequence_size]u8) void {
         var time_out = set_game_speed(step);
         simon(sequence, step, time_out);
 
-        if (!player(sequence, step)) {
+        if (!player(sequence, step, 1500)) {
             game_over();
             break;
         } else if (step == level - 1) {
