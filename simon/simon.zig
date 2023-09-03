@@ -151,7 +151,7 @@ fn key_down(pin: u5, timeout_ms: u32) bool {
     gpio.num(pin - 4).toggle();
     while (count < max_loop and gpio.num(pin).read() == 0) {
         count += 1;
-        time.sleep_ms(50);
+        time.sleep_ms(50); // also functions as debounce
     }
     stop_beep();
     gpio.num(pin - 4).toggle();
