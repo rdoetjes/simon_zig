@@ -96,7 +96,7 @@ fn key_down(pin: u5, timeout_ms: u32) bool {
     if (count >= max_loop) return false else return true;
 }
 
-fn player(sequence: *[max_sequence_size]u8, step: usize, timeout_ms: u32) bool {
+fn is_player_worthy(sequence: *[max_sequence_size]u8, step: usize, timeout_ms: u32) bool {
     for (0..step + 1) |i| {
         const loop_delay_ms = 50;
         const max_loop = timeout_ms / loop_delay_ms;
@@ -133,7 +133,7 @@ fn game_loop(sequence: *[max_sequence_size]u8) void {
     for (0..level) |step| {
         simon(sequence, step, 300);
 
-        if (!player(sequence, step, 1500)) { // step 2 (key_down also)
+        if (!is_player_worthy(sequence, step, 1500)) { // step 2 (key_down also)
             game_over(); // step 3
             break;
         } else if (step == level - 1) {

@@ -163,7 +163,7 @@ fn key_down(pin: u5, timeout_ms: u32) bool {
 // if you wait more than timeout_ms for the next button press return false.
 // if you enter the wrong move or spend more than timeout_ms return false.
 // if you get the move correct within timeout_ms return true
-fn player(sequence: *[max_sequence_size]u8, step: usize, timeout_ms: u32) bool {
+fn is_player_worthy(sequence: *[max_sequence_size]u8, step: usize, timeout_ms: u32) bool {
     for (0..step + 1) |i| {
         const loop_delay_ms = 50;
         const max_loop = timeout_ms / loop_delay_ms;
@@ -219,7 +219,7 @@ fn game_loop(sequence: *[max_sequence_size]u8) void {
         var time_out = set_game_speed(step);
         simon(sequence, step, time_out);
 
-        if (!player(sequence, step, 1500)) {
+        if (!is_player_worthy(sequence, step, 1500)) {
             game_over();
             break;
         } else if (step == level - 1) {
