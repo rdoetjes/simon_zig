@@ -236,6 +236,6 @@ pub fn main() !void {
 
     setup();
     while (true) {
-        game_loop(&sequence);
+        game_loop(&sequence);        
     }
 }
