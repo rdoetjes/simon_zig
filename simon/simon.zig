@@ -98,11 +98,17 @@ fn select_level() u8 {
     while (true) {
         if (gpio.num(6).read() == 0) {
             return 10;
-        } else if (gpio.num(7).read() == 0) {
+        } 
+                
+        if (gpio.num(7).read() == 0) {
             return 15;
-        } else if (gpio.num(8).read() == 0) {
+        }
+        
+        if (gpio.num(8).read() == 0) {
             return 20;
-        } else if (gpio.num(9).read() == 0) {
+        } 
+        
+        if (gpio.num(9).read() == 0) {
             return 30;
         }
         time.sleep_ms(50); // debounces switch and saves a bit of energt
