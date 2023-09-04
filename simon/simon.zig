@@ -96,21 +96,10 @@ fn simon(sequence: *[max_sequence_size]u8, step: usize, speed: u32) void {
 // select level, red switch = 10 steps, green switch = 15, yellow = 20 steps (pfff), blue = 30 steps (goodluck!!!)
 fn select_level() u8 {
     while (true) {
-        if (gpio.num(6).read() == 0) {
-            return 10;
-        } 
-                
-        if (gpio.num(7).read() == 0) {
-            return 15;
-        }
-        
-        if (gpio.num(8).read() == 0) {
-            return 20;
-        } 
-        
-        if (gpio.num(9).read() == 0) {
-            return 30;
-        }
+        if (gpio.num(6).read() == 0) { return 10; } 
+        if (gpio.num(7).read() == 0) { return 15; }        
+        if (gpio.num(8).read() == 0) { return 20; }         
+        if (gpio.num(9).read() == 0) { return 30; }
         time.sleep_ms(50); // debounces switch and saves a bit of energt
     }
 }
