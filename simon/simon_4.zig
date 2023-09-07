@@ -2,9 +2,8 @@ const microzig = @import("microzig");
 const rp2040 = microzig.hal;
 const time = rp2040.time;
 const gpio = rp2040.gpio;
-const pwm = rp2040.pwm;
-const pinsc = rp2040.pins;
 const rand = rp2040.rand;
+const pwm = rp2040.pwm;
 
 const max_sequence_size = 31;
 
