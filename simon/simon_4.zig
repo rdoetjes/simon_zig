@@ -12,11 +12,6 @@ const pin_config = rp2040.pins.GlobalConfiguration{
     .GPIO10 = .{ .name = "piezo", .function = .PWM5_A },
 };
 
-//array with output pins
-const out_p = [_]u5{ 2, 3, 4, 5 };
-//array with input pins
-const in_p = [_]u5{ 6, 7, 8, 9 };
-
 var piezo: rp2040.pwm.Pwm(5, .a) = undefined;
 
 // setup the GPIO pins
@@ -24,13 +19,17 @@ var piezo: rp2040.pwm.Pwm(5, .a) = undefined;
 // 6,7,8,9 are switches that correspond with LEDs, red,green,yellow,blue
 // 10 is the piezo
 fn setup() void {
-    for (0..4) |r| {
-        gpio.num(out_p[r]).set_function(.sio);
-        gpio.num(out_p[r]).set_direction(.out);
+    for (2..6) |r| {
+        var i: u5 = @truncate(r);
+        gpio.num(i).set_function(.sio);
+        gpio.num(i).set_direction(.out);
+    }
 
-        gpio.num(in_p[r]).set_function(.sio);
-        gpio.num(in_p[r]).set_direction(.in);
-        gpio.num(in_p[r]).set_pull(.up);
+    for (6..10) |r| {
+        var i: u5 = @truncate(r);
+        gpio.num(i).set_function(.sio);
+        gpio.num(i).set_direction(.in);
+        gpio.num(i).set_pull(.up);
     }
 
     piezo.set_level(6000);
@@ -78,11 +77,12 @@ fn play_beep(move: u8) void {
 // simon calls this to show a move to the player with a specified duration
 // speed is the time it shows/sounds the move
 fn play_move(move: u8, speed: u32) void {
+    var pin: u5 = @truncate(move + 2);
     play_beep(move);
-    gpio.num(out_p[move]).toggle();
+    gpio.num(pin).toggle();
     time.sleep_ms(speed);
     stop_beep();
-    gpio.num(out_p[move]).toggle();
+    gpio.num(pin).toggle();
     time.sleep_ms(speed);
 }
 
@@ -96,16 +96,16 @@ fn simon(sequence: *[max_sequence_size]u8, step: usize, speed: u32) void {
 // select level, red switch = 10 steps, green switch = 15, yellow = 20 steps (pfff), blue = 30 steps (goodluck!!!)
 fn select_level() u8 {
     while (true) {
-        if (gpio.num(in_p[0]).read() == 0) {
+        if (gpio.num(6).read() == 0) {
             return 10;
         }
-        if (gpio.num(in_p[1]).read() == 0) {
+        if (gpio.num(7).read() == 0) {
             return 15;
         }
-        if (gpio.num(in_p[2]).read() == 0) {
+        if (gpio.num(8).read() == 0) {
             return 20;
         }
-        if (gpio.num(in_p[3]).read() == 0) {
+        if (gpio.num(9).read() == 0) {
             return 30;
         }
         time.sleep_ms(50); // debounces switch and saves a bit of energt
@@ -116,8 +116,9 @@ fn select_level() u8 {
 fn game_over() void {
     play_beep(4);
     for (0..10) |_| {
-        for (0..4) |i| {
-            gpio.num(out_p[i]).toggle();
+        for (2..6) |i| {
+            var pin: u5 = @truncate(i);
+            gpio.num(pin).toggle();
         }
         time.sleep_ms(100);
     }
@@ -128,15 +129,15 @@ fn game_over() void {
 fn you_won() void {
     time.sleep_ms(300);
     for (0..10) |_| {
-        gpio.num(out_p[1]).toggle();
+        gpio.num(2).toggle();
         play_beep(0);
-        gpio.num(out_p[3]).toggle();
+        gpio.num(4).toggle();
         play_beep(1);
         time.sleep_ms(100);
         play_beep(2);
-        gpio.num(out_p[0]).toggle();
+        gpio.num(3).toggle();
         play_beep(3);
-        gpio.num(out_p[2]).toggle();
+        gpio.num(5).toggle();
         time.sleep_ms(100);
     }
     stop_beep();
@@ -149,28 +150,28 @@ fn calc_max_count(loop_delay_ms: u32, timeout_ms: u32) u32 {
 
 // lights up the led and plays the sound of the corresponding pin when the key is down
 // the button is released in software are timeout_ms, return true
-fn key_down(move: u5, timeout_ms: u32) bool {
+fn key_down(pin: u5, timeout_ms: u32) bool {
     const loop_delay_ms = 50;
     const max_loop = calc_max_count(loop_delay_ms, timeout_ms);
     var count: u32 = 0;
 
-    play_beep(move);
-    gpio.num(out_p[move]).toggle();
-    while (count < max_loop and gpio.num(in_p[move]).read() == 0) : (count += 1) {
+    play_beep(pin - 6);
+    gpio.num(pin - 4).toggle();
+    while (count < max_loop and gpio.num(pin).read() == 0) : (count += 1) {
         time.sleep_ms(50); // also functions as debounce
     }
     stop_beep();
-    gpio.num(out_p[move]).toggle();
+    gpio.num(pin - 4).toggle();
 
     if (count >= max_loop) return false else return true;
 }
 
 // handeles the users input and is there to reduce code duplication
 fn get_handle_player_input(timeout_ms: u32) i8 {
-    for (0..4) |i| {
-        var move: u5 = @truncate(i);
-        if (gpio.num(in_p[i]).read() == 0) {
-            if (key_down(move, timeout_ms)) return @intCast(i) else return -2;
+    for (6..10) |i| {
+        var pin: u5 = @truncate(i);
+        if (gpio.num(pin).read() == 0) {
+            if (key_down(pin, timeout_ms)) return pin - 6 else return -2;
         }
     }
     return -1;
@@ -217,7 +218,9 @@ fn set_game_speed(step: usize) u32 {
 // the game loop that handles GAME_RESET, SIMON, PLAYER, WIN AND LOOSE LOGIC.
 fn game_loop(sequence: *[max_sequence_size]u8) void {
     reset_game(sequence);
+
     var level = select_level();
+
     time.sleep_ms(1000);
 
     for (0..level) |step| {
@@ -244,6 +247,5 @@ pub fn main() !void {
     setup();
     while (true) {
         game_loop(&sequence);
-        time.sleep_ms(1000);
     }
 }
