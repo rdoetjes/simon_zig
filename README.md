@@ -21,6 +21,7 @@ follow SIMON's(uhmm Ziggy's) commands.
 # simon_4.zig adding the PWM sound and the speed up when progressing through the levels
 
 # simon.zig
-This is the refactored code, where we use an in_p and out_p array that holds the pins.
+This is the refactored code, written in the way you would do it for production and not for teaching, as it's simply too much to get the point accross.
+What was changed is that the arrays: in_p and out_p array are introduced and the hold respectively the input pins and the output pins.
 So you can easily reoganize the pins, as the moves (0,1,2,3) match the indeces of the input and output pin arrays.
 We introduced the get_handle_player_input() function in order to reduce code.
