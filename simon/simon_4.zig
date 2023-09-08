@@ -200,9 +200,7 @@ fn is_player_worthy(sequence: *[max_sequence_size]u8, step: usize, timeout_ms: u
 // sets the game spede based on the step
 // SIMON grows impatient the further we get in the game and shows the moves shorter
 fn set_game_speed(step: usize) u32 {
-    if (step < 4) {
-        return 300;
-    } else if (step >= 4 and step < 10) {
+    if (step >= 4 and step < 10) {
         return 250;
     } else if (step >= 10 and step < 15) {
         return 225;
